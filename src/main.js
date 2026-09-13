@@ -1,6 +1,9 @@
 import "./style.css";
+import { mountHero } from "./hero.js";
 import { mountAtlas } from "./views/atlas.js";
 import { mountSearch } from "./views/search.js";
+
+mountHero(document.getElementById("hero"));
 
 const app = document.getElementById("app");
 

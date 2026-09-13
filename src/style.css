@@ -38,6 +38,162 @@
   box-sizing: border-box;
 }
 
+.hero-band {
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  width: 100%;
+  background: var(--page);
+  padding: 32px 20px 40px;
+  display: flex;
+  justify-content: center;
+}
+
+.terminal-window {
+  width: 100%;
+  max-width: 720px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  font-family: var(--mono);
+  overflow: hidden;
+}
+
+.terminal-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.terminal-path {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.terminal-status {
+  display: flex;
+  gap: 6px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-dot--ok {
+  background: var(--series-1);
+}
+
+.status-dot--dim {
+  background: var(--text-muted);
+  opacity: 0.5;
+}
+
+.terminal-body {
+  padding: 18px 20px 24px;
+}
+
+.graph-canvas {
+  width: 100%;
+  height: 200px;
+  display: block;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 560px) {
+  .graph-canvas {
+    height: 150px;
+  }
+}
+
+.hero-wordmark {
+  font-size: 34px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.hero-tagline {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 6px 0 20px;
+}
+
+.boot-script {
+  font-size: 13px;
+  line-height: 1.7;
+  min-height: 1.7em;
+}
+
+.boot-block {
+  margin-bottom: 4px;
+}
+
+.boot-cmd {
+  color: var(--series-1);
+  white-space: pre-wrap;
+}
+
+.boot-output {
+  color: var(--text-secondary);
+  padding-left: 18px;
+  white-space: pre-wrap;
+}
+
+.launch-line[hidden] {
+  display: none;
+}
+
+.launch-line {
+  margin-top: 14px;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.launch-line .boot-cmd {
+  text-decoration: none;
+}
+
+.launch-line:hover .boot-cmd,
+.launch-line:focus-visible .boot-cmd {
+  text-decoration: underline;
+}
+
+.launch-line:focus-visible {
+  outline: 1px solid var(--series-1);
+  outline-offset: 3px;
+}
+
+.cursor-block {
+  width: 7px;
+  height: 14px;
+  background: var(--series-1);
+  display: inline-block;
+  animation: blink 1s step-end infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cursor-block {
+    animation: none;
+  }
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+#app-shell {
+  scroll-margin-top: 0;
+}
+
 body {
   margin: 0;
   background: var(--page);

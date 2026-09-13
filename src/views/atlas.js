@@ -2,10 +2,10 @@ import { fetchAllSources } from "../sources/index.js";
 import { renderContentTypeChart, renderSizeDistributionChart } from "../charts.js";
 
 const CONTENT_TYPES = [
-  { key: "posts", label: "Posts", colorVar: "--series-1" },
-  { key: "video", label: "Video", colorVar: "--series-2" },
-  { key: "images", label: "Images", colorVar: "--series-3" },
-  { key: "links", label: "Links & discussions", colorVar: "--series-4" },
+  { key: "posts", label: "Posts", statLabel: "Posts instances", colorVar: "--series-1" },
+  { key: "video", label: "Video", statLabel: "Video instances", colorVar: "--series-2" },
+  { key: "images", label: "Images", statLabel: "Images instances", colorVar: "--series-3" },
+  { key: "links", label: "Links & discussions", statLabel: "Links & discussions instances", colorVar: "--series-4" },
 ];
 
 const PAGE_SIZE = 60;
@@ -171,7 +171,7 @@ export function mountAtlas(root) {
     const tiles = [
       { label: "Instances", value: fmt(state.instances.length) },
       { label: "Total users", value: fmt(totalUsers) },
-      ...CONTENT_TYPES.map((c) => ({ label: c.label, value: fmt(grouped[c.key].length) })),
+      ...CONTENT_TYPES.map((c) => ({ label: c.statLabel, value: fmt(grouped[c.key].length) })),
     ];
     for (const t of tiles) {
       const tile = document.createElement("div");
