@@ -1,3 +1,5 @@
+import { getFavorites } from "../favorites.js";
+
 const CONTENT_TYPES = [
   { key: "posts", label: "Posts", colorVar: "--series-1", available: true },
   { key: "video", label: "Video", colorVar: "--series-2", available: true },
@@ -23,10 +25,15 @@ export function mountSearch(root) {
   const state = {
     term: "",
     contentTypes: new Set(["posts", "video", "links"]),
+    includeFavorites: true,
     loading: false,
     results: null,
     error: null,
   };
+
+  function searchableFavorites() {
+    return getFavorites().filter((f) => TYPE_META[f.contentType]?.available && state.contentTypes.has(f.contentType));
+  }
 
   let resultsArea = null;
 
@@ -126,8 +133,14 @@ export function mountSearch(root) {
     state.error = null;
     render();
 
+    const extra = state.includeFavorites
+      ? searchableFavorites().map((f) => ({ domain: f.domain, contentType: f.contentType }))
+      : [];
+
     try {
-      const res = await fetch(`/api/search?term=${encodeURIComponent(term)}&types=${types.join(",")}`);
+      const params = new URLSearchParams({ term, types: types.join(",") });
+      if (extra.length) params.set("extra", JSON.stringify(extra));
+      const res = await fetch(`/api/search?${params.toString()}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || `Search failed (${res.status})`);
       state.results = data;
@@ -177,6 +190,19 @@ export function mountSearch(root) {
       fieldset.appendChild(label);
     });
     bar.appendChild(fieldset);
+
+    const favCount = searchableFavorites().length;
+    const favLabel = document.createElement("label");
+    const favCheckbox = document.createElement("input");
+    favCheckbox.type = "checkbox";
+    favCheckbox.checked = state.includeFavorites;
+    favCheckbox.disabled = favCount === 0;
+    favCheckbox.addEventListener("change", () => {
+      state.includeFavorites = favCheckbox.checked;
+    });
+    favLabel.appendChild(favCheckbox);
+    favLabel.append(favCount ? ` Include my favorites (${favCount})` : " Include my favorites (none pinned)");
+    bar.appendChild(favLabel);
 
     const termInput = document.createElement("input");
     termInput.type = "text";

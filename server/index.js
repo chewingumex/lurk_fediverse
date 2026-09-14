@@ -5,6 +5,29 @@ const app = express();
 const PORT = process.env.PORT || 8787;
 
 const VALID_TYPES = new Set(["posts", "video", "links"]);
+const MAX_EXTRA_INSTANCES = 15;
+const DOMAIN_RE = /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$/i;
+
+function parseExtraInstances(raw) {
+  if (!raw) return [];
+  let parsed;
+  try {
+    parsed = JSON.parse(raw.toString());
+  } catch {
+    return [];
+  }
+  if (!Array.isArray(parsed)) return [];
+
+  return parsed
+    .filter(
+      (e) =>
+        e &&
+        typeof e.domain === "string" &&
+        DOMAIN_RE.test(e.domain) &&
+        VALID_TYPES.has(e.contentType)
+    )
+    .slice(0, MAX_EXTRA_INSTANCES);
+}
 
 app.get("/api/search", async (req, res) => {
   const term = (req.query.term ?? "").toString().trim();
@@ -18,8 +41,10 @@ app.get("/api/search", async (req, res) => {
 
   if (!types.length) return res.status(400).json({ error: "No valid content types requested." });
 
+  const extraInstances = parseExtraInstances(req.query.extra);
+
   try {
-    const data = await runSearch({ term, contentTypes: types });
+    const data = await runSearch({ term, contentTypes: types, extraInstances });
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: err.message });

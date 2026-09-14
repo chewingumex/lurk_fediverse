@@ -2,6 +2,7 @@ import "./style.css";
 import { mountHero } from "./hero.js";
 import { mountAtlas } from "./views/atlas.js";
 import { mountSearch } from "./views/search.js";
+import { mountFavorites } from "./views/favorites.js";
 
 mountHero(document.getElementById("hero"));
 
@@ -11,14 +12,17 @@ app.innerHTML = `
   <div class="tab-bar">
     <button class="tab-btn active" data-tab="atlas">Atlas</button>
     <button class="tab-btn" data-tab="search">Search</button>
+    <button class="tab-btn" data-tab="favorites">Favorites</button>
   </div>
   <div id="view-atlas" class="view"></div>
   <div id="view-search" class="view" hidden></div>
+  <div id="view-favorites" class="view" hidden></div>
 `;
 
 const views = {
   atlas: document.getElementById("view-atlas"),
   search: document.getElementById("view-search"),
+  favorites: document.getElementById("view-favorites"),
 };
 
 app.querySelectorAll(".tab-btn").forEach((btn) => {
@@ -32,3 +36,4 @@ app.querySelectorAll(".tab-btn").forEach((btn) => {
 
 mountAtlas(views.atlas);
 mountSearch(views.search);
+mountFavorites(views.favorites);

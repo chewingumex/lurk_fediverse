@@ -1,5 +1,6 @@
 import { fetchAllSources } from "../sources/index.js";
 import { renderContentTypeChart, renderSizeDistributionChart } from "../charts.js";
+import { isFavorite, toggleFavorite, onFavoritesChange } from "../favorites.js";
 
 const CONTENT_TYPES = [
   { key: "posts", label: "Posts", statLabel: "Posts instances", colorVar: "--series-1" },
@@ -26,6 +27,7 @@ export function mountAtlas(root) {
   };
 
   let resultsContainer = null;
+  let unsubscribeFavorites = null;
 
   function groupByContentType(instances) {
     const groups = Object.fromEntries(CONTENT_TYPES.map((c) => [c.key, []]));
@@ -76,6 +78,8 @@ export function mountAtlas(root) {
     container.appendChild(summary);
 
     if (!filtered.length) {
+      unsubscribeFavorites?.();
+      unsubscribeFavorites = null;
       const empty = document.createElement("div");
       empty.className = "empty-state";
       empty.textContent = "No instances match these filters.";
@@ -88,6 +92,7 @@ export function mountAtlas(root) {
 
     const visible = filtered.slice(0, state.visibleCount);
     const typeMeta = Object.fromEntries(CONTENT_TYPES.map((c) => [c.key, c]));
+    const pinSyncs = [];
 
     for (const inst of visible) {
       const meta = typeMeta[inst.contentType];
@@ -96,15 +101,36 @@ export function mountAtlas(root) {
       card.innerHTML = `
         <div class="card__top">
           <div class="card__domain">${inst.domain}</div>
-          <span class="card__badge"><span class="card__badge-dot" style="background: var(${meta.colorVar})"></span>${meta.label}</span>
+          <div class="card__top-right">
+            <button class="card__pin" type="button"></button>
+            <span class="card__badge"><span class="card__badge-dot" style="background: var(${meta.colorVar})"></span>${meta.label}</span>
+          </div>
         </div>
         <div class="card__users">${fmt(inst.users)} users</div>
         ${inst.description ? `<div class="card__desc">${escapeHtml(inst.description)}</div>` : ""}
         <a class="card__link" href="${inst.url}" target="_blank" rel="noopener noreferrer">Visit →</a>
       `;
+
+      const pinBtn = card.querySelector(".card__pin");
+      const syncPin = () => {
+        const pinned = isFavorite(inst.domain);
+        pinBtn.textContent = pinned ? "★" : "☆";
+        pinBtn.classList.toggle("card__pin--active", pinned);
+        pinBtn.setAttribute("aria-label", pinned ? `Unpin ${inst.domain}` : `Pin ${inst.domain}`);
+      };
+      syncPin();
+      pinBtn.addEventListener("click", () => {
+        toggleFavorite(inst);
+        syncPin();
+      });
+      pinSyncs.push(syncPin);
+
       grid.appendChild(card);
     }
     container.appendChild(grid);
+
+    unsubscribeFavorites?.();
+    unsubscribeFavorites = onFavoritesChange(() => pinSyncs.forEach((sync) => sync()));
 
     if (filtered.length > state.visibleCount) {
       const btn = document.createElement("button");

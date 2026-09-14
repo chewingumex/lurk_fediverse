@@ -11,13 +11,16 @@ const SEARCHERS = {
 
 const RESULTS_PER_INSTANCE = 15;
 
-export async function runSearch({ term, contentTypes }) {
+export async function runSearch({ term, contentTypes, extraInstances = [] }) {
   const jobs = [];
 
   for (const type of contentTypes) {
     const searcher = SEARCHERS[type];
-    const instances = SEED_INSTANCES[type];
-    if (!searcher || !instances) continue;
+    const seeds = SEED_INSTANCES[type];
+    if (!searcher || !seeds) continue;
+
+    const extras = extraInstances.filter((e) => e.contentType === type).map((e) => e.domain);
+    const instances = [...new Set([...seeds, ...extras])];
 
     for (const instance of instances) {
       jobs.push(
