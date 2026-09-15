@@ -1,8 +1,15 @@
 import { fetchMastodon } from "./mastodon.js";
 import { fetchPeerTube } from "./peertube.js";
-import { fetchLemmy, fetchPixelfed } from "./observer.js";
+import {
+  fetchLemmy,
+  fetchPixelfed,
+  fetchPleroma,
+  fetchFriendica,
+  fetchMisskey,
+  fetchMobilizon,
+} from "./observer.js";
 
-const CACHE_KEY = "fediverse-atlas-cache-v1";
+const CACHE_KEY = "fediverse-atlas-cache-v2";
 const CACHE_TTL_MS = 30 * 60 * 1000; // 30 min — directory data doesn't move fast
 
 const SOURCES = [
@@ -10,6 +17,10 @@ const SOURCES = [
   { name: "peertube", fetch: fetchPeerTube },
   { name: "lemmy", fetch: fetchLemmy },
   { name: "pixelfed", fetch: fetchPixelfed },
+  { name: "pleroma", fetch: fetchPleroma },
+  { name: "friendica", fetch: fetchFriendica },
+  { name: "misskey", fetch: fetchMisskey },
+  { name: "mobilizon", fetch: fetchMobilizon },
 ];
 
 function readCache() {

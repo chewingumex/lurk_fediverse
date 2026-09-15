@@ -1,12 +1,20 @@
 import { searchMastodon } from "./sources/mastodon.js";
 import { searchPeerTube } from "./sources/peertube.js";
 import { searchLemmy } from "./sources/lemmy.js";
+import { searchMisskey } from "./sources/misskey.js";
+import { searchMobilizonEvents } from "./sources/mobilizon.js";
 import { SEED_INSTANCES } from "./seeds.js";
 
+// Keyed by software rather than content type: a content type like "posts"
+// can be served by more than one incompatible API (Mastodon/Pleroma share
+// one shape, Misskey has its own).
 const SEARCHERS = {
-  posts: searchMastodon,
-  video: searchPeerTube,
-  links: searchLemmy,
+  mastodon: searchMastodon,
+  pleroma: searchMastodon,
+  peertube: searchPeerTube,
+  lemmy: searchLemmy,
+  misskey: searchMisskey,
+  mobilizon: searchMobilizonEvents,
 };
 
 const RESULTS_PER_INSTANCE = 15;
@@ -15,18 +23,29 @@ export async function runSearch({ term, contentTypes, extraInstances = [] }) {
   const jobs = [];
 
   for (const type of contentTypes) {
-    const searcher = SEARCHERS[type];
     const seeds = SEED_INSTANCES[type];
-    if (!searcher || !seeds) continue;
+    if (!seeds) continue;
 
-    const extras = extraInstances.filter((e) => e.contentType === type).map((e) => e.domain);
-    const instances = [...new Set([...seeds, ...extras])];
+    const extras = extraInstances.filter((e) => e.contentType === type);
+    const seen = new Set();
+    const instances = [...seeds, ...extras].filter((i) => {
+      if (seen.has(i.domain)) return false;
+      seen.add(i.domain);
+      return true;
+    });
 
-    for (const instance of instances) {
+    for (const { domain, software } of instances) {
+      const searcher = SEARCHERS[software];
+      if (!searcher) {
+        // e.g. a favorited Friendica instance — no anonymous search API to call.
+        jobs.push(Promise.resolve({ instance: domain, type, results: [], error: `${software}: search not supported` }));
+        continue;
+      }
+
       jobs.push(
-        searcher(instance, term, RESULTS_PER_INSTANCE)
-          .then((results) => ({ instance, type, results, error: null }))
-          .catch((err) => ({ instance, type, results: [], error: err.message }))
+        searcher(domain, term, RESULTS_PER_INSTANCE)
+          .then((results) => ({ instance: domain, type, results, error: null }))
+          .catch((err) => ({ instance: domain, type, results: [], error: err.message }))
       );
     }
   }

@@ -22,7 +22,7 @@ npm run dev
 
 This starts both the frontend and the backend search proxy together, then open **http://localhost:5173**.
 
-- **Atlas tab** — browses public instance directories (Mastodon, PeerTube, Lemmy, Pixelfed), no setup needed.
+- **Atlas tab** — browses public instance directories (Mastodon, PeerTube, Lemmy, Pixelfed, Pleroma, Friendica, Misskey, Mobilizon), no setup needed.
 - **Search tab** — fans a search term out across a small set of seed instances per content type. Requires the backend proxy, which `npm run dev` already starts for you.
 
 If you'd rather run the two processes separately (e.g. for debugging one independently):

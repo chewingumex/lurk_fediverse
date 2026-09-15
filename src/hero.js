@@ -1,8 +1,9 @@
 const NODE_TYPES = [
-  { type: "posts", colorVar: "--series-1", weight: 0.4 },
-  { type: "links", colorVar: "--series-4", weight: 0.25 },
-  { type: "video", colorVar: "--series-2", weight: 0.2 },
-  { type: "images", colorVar: "--series-3", weight: 0.15 },
+  { type: "posts", colorVar: "--series-1", weight: 0.35 },
+  { type: "links", colorVar: "--series-4", weight: 0.2 },
+  { type: "video", colorVar: "--series-2", weight: 0.17 },
+  { type: "images", colorVar: "--series-3", weight: 0.13 },
+  { type: "events", colorVar: "--series-5", weight: 0.15 },
 ];
 
 const NODE_COUNT = 42;
@@ -80,6 +81,7 @@ function resolveColors() {
     video: get("--series-2"),
     images: get("--series-3"),
     links: get("--series-4"),
+    events: get("--series-5"),
     edge: get("--gridline"),
   };
 }
@@ -203,7 +205,7 @@ const BOOT_SCRIPT = [
     cmd: "cat status",
     lines: [
       "atlas   online",
-      "search  online (posts, video, links — images need a login we don't have)",
+      "search  online (posts, video, links, events — images need a login we don't have)",
     ],
   },
 ];

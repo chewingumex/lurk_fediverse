@@ -13,6 +13,28 @@ export async function fetchJson(url, { timeoutMs = 8000 } = {}) {
   }
 }
 
+// Misskey's API and Mobilizon's GraphQL endpoint are both POST-only, even
+// for anonymous reads.
+export async function postJson(url, body, { timeoutMs = 8000 } = {}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      signal: controller.signal,
+      headers: {
+        "User-Agent": "myFediverse-atlas/0.1 (local exploration tool)",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+    return await res.json();
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 const ENTITY_MAP = { amp: "&", lt: "<", gt: ">", quot: '"', "#39": "'" };
 
 export function stripHtml(html) {

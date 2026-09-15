@@ -8,6 +8,7 @@ const CONTENT_TYPES = [
   { key: "video", label: "Video", statLabel: "Video instances", colorVar: "--series-2" },
   { key: "images", label: "Images", statLabel: "Images instances", colorVar: "--series-3" },
   { key: "links", label: "Links & discussions", statLabel: "Links & discussions instances", colorVar: "--series-4" },
+  { key: "events", label: "Events", statLabel: "Events instances", colorVar: "--series-5" },
 ];
 
 const PAGE_SIZE = 60;
@@ -234,7 +235,7 @@ export function mountAtlas(root) {
     header.innerHTML = `
       <div>
         <h1>Fediverse Atlas</h1>
-        <p>Public instances across posts, video, images, and link-sharing software.</p>
+        <p>Public instances across posts, video, images, link-sharing, and events software.</p>
       </div>
     `;
     const meta = document.createElement("div");

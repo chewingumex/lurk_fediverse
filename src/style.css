@@ -13,6 +13,7 @@
   --series-2: #eb6834; /* video */
   --series-3: #1baf7a; /* images */
   --series-4: #eda100; /* links */
+  --series-5: #9a5cd0; /* events */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -31,6 +32,7 @@
     --series-2: #d95926;
     --series-3: #199e70;
     --series-4: #c98500;
+    --series-5: #a86fdb;
   }
 }
 

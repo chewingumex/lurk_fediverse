@@ -11,6 +11,7 @@ const CONTENT_TYPES = [
     reason: "Pixelfed requires a logged-in session for all public API access — can't be searched anonymously.",
   },
   { key: "links", label: "Links & discussions", colorVar: "--series-4", available: true },
+  { key: "events", label: "Events", colorVar: "--series-5", available: true },
 ];
 
 const TYPE_META = Object.fromEntries(CONTENT_TYPES.map((c) => [c.key, c]));
@@ -24,7 +25,7 @@ function escapeHtml(str) {
 export function mountSearch(root) {
   const state = {
     term: "",
-    contentTypes: new Set(["posts", "video", "links"]),
+    contentTypes: new Set(["posts", "video", "links", "events"]),
     includeFavorites: true,
     loading: false,
     results: null,
@@ -61,7 +62,7 @@ export function mountSearch(root) {
       const empty = document.createElement("div");
       empty.className = "empty-state";
       empty.textContent =
-        'Enter a term and hit Search. Posts search matches hashtags — try a single word like "photography" rather than a full sentence.';
+        'Enter a term and hit Search. Posts search matches hashtags — try a single word like "photography" rather than a full sentence. Events search matches free text in the title.';
       resultsArea.appendChild(empty);
       return;
     }
@@ -134,7 +135,7 @@ export function mountSearch(root) {
     render();
 
     const extra = state.includeFavorites
-      ? searchableFavorites().map((f) => ({ domain: f.domain, contentType: f.contentType }))
+      ? searchableFavorites().map((f) => ({ domain: f.domain, contentType: f.contentType, software: f.software }))
       : [];
 
     try {

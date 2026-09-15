@@ -5,8 +5,17 @@ import { fetchInstanceDetail } from "./detail.js";
 const app = express();
 const PORT = process.env.PORT || 8787;
 
-const VALID_TYPES = new Set(["posts", "video", "links"]);
-const VALID_SOFTWARE = new Set(["mastodon", "peertube", "lemmy", "pixelfed"]);
+const VALID_TYPES = new Set(["posts", "video", "links", "events"]);
+const VALID_SOFTWARE = new Set([
+  "mastodon",
+  "peertube",
+  "lemmy",
+  "pixelfed",
+  "pleroma",
+  "friendica",
+  "misskey",
+  "mobilizon",
+]);
 const MAX_EXTRA_INSTANCES = 15;
 const DOMAIN_RE = /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$/i;
 
@@ -26,7 +35,8 @@ function parseExtraInstances(raw) {
         e &&
         typeof e.domain === "string" &&
         DOMAIN_RE.test(e.domain) &&
-        VALID_TYPES.has(e.contentType)
+        VALID_TYPES.has(e.contentType) &&
+        VALID_SOFTWARE.has(e.software)
     )
     .slice(0, MAX_EXTRA_INSTANCES);
 }

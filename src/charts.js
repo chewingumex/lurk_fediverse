@@ -2,10 +2,11 @@
 // (a categorical breakdown, a single-hue histogram) don't need one.
 
 const CONTENT_TYPE_META = {
-  posts: { label: "Posts (Mastodon-like)", colorVar: "--series-1" },
+  posts: { label: "Posts (microblogging)", colorVar: "--series-1" },
   video: { label: "Video (PeerTube)", colorVar: "--series-2" },
   images: { label: "Images (Pixelfed)", colorVar: "--series-3" },
   links: { label: "Links & discussions (Lemmy)", colorVar: "--series-4" },
+  events: { label: "Events (Mobilizon)", colorVar: "--series-5" },
 };
 
 function makeTooltip(container) {

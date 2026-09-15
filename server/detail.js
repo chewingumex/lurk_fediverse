@@ -3,12 +3,20 @@ import { fetchMastodonDetail } from "./sources/mastodon.js";
 import { fetchPeerTubeDetail } from "./sources/peertube.js";
 import { fetchLemmyDetail } from "./sources/lemmy.js";
 import { fetchPixelfedDetail } from "./sources/pixelfed.js";
+import { fetchMisskeyDetail } from "./sources/misskey.js";
+import { fetchMobilizonDetail } from "./sources/mobilizon.js";
 
 const DETAIL_FETCHERS = {
   mastodon: fetchMastodonDetail,
   peertube: fetchPeerTubeDetail,
   lemmy: fetchLemmyDetail,
   pixelfed: fetchPixelfedDetail,
+  // Pleroma and Friendica both implement the Mastodon API's instance-info
+  // endpoint, so no dedicated fetcher is needed.
+  pleroma: fetchMastodonDetail,
+  friendica: fetchMastodonDetail,
+  misskey: fetchMisskeyDetail,
+  mobilizon: fetchMobilizonDetail,
 };
 
 const EMPTY_DETAIL = {
