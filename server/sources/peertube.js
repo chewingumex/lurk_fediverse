@@ -1,5 +1,29 @@
 import { fetchJson } from "../http.js";
 
+export async function fetchPeerTubeDetail(domain) {
+  const d = await fetchJson(`https://${domain}/api/v1/config`);
+
+  let registrationsText = null;
+  if (d.signup?.allowed != null) {
+    registrationsText = d.signup.allowed
+      ? d.signup.requiresEmailVerification
+        ? "Open (email verification required)"
+        : "Open"
+      : "Closed";
+  }
+
+  return {
+    title: d.instance?.name ?? domain,
+    description: (d.instance?.description || d.instance?.shortDescription || "").trim(),
+    rules: [],
+    languages: [],
+    registrationsText,
+    stats: {},
+    contact: null,
+    version: d.serverVersion ?? null,
+  };
+}
+
 export async function searchPeerTube(instance, term, limit) {
   const url = `https://${instance}/api/v1/search/videos?search=${encodeURIComponent(term)}&count=${limit}`;
   const data = await fetchJson(url);

@@ -1,10 +1,12 @@
 import express from "express";
 import { runSearch } from "./search.js";
+import { fetchInstanceDetail } from "./detail.js";
 
 const app = express();
 const PORT = process.env.PORT || 8787;
 
 const VALID_TYPES = new Set(["posts", "video", "links"]);
+const VALID_SOFTWARE = new Set(["mastodon", "peertube", "lemmy", "pixelfed"]);
 const MAX_EXTRA_INSTANCES = 15;
 const DOMAIN_RE = /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$/i;
 
@@ -46,6 +48,21 @@ app.get("/api/search", async (req, res) => {
   try {
     const data = await runSearch({ term, contentTypes: types, extraInstances });
     res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get("/api/instance-detail", async (req, res) => {
+  const domain = (req.query.domain ?? "").toString().trim().toLowerCase();
+  const software = (req.query.software ?? "").toString().trim().toLowerCase();
+
+  if (!DOMAIN_RE.test(domain)) return res.status(400).json({ error: "Invalid or missing domain." });
+  if (!VALID_SOFTWARE.has(software)) return res.status(400).json({ error: "Invalid or missing software." });
+
+  try {
+    const detail = await fetchInstanceDetail(domain, software);
+    res.json(detail);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

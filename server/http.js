@@ -28,3 +28,16 @@ export function stripHtml(html) {
     .replace(/\s+/g, " ")
     .trim();
 }
+
+// NodeInfo (nodeinfo.diaspora.software) is the closest thing to a
+// cross-software "about this instance" endpoint — most ActivityPub servers
+// advertise it at a well-known path regardless of what dedicated API they
+// otherwise expose. Used as a last-resort fallback when a server's own
+// instance-info endpoint is missing, gated, or shaped differently than expected.
+export async function fetchNodeinfo(domain) {
+  const discovery = await fetchJson(`https://${domain}/.well-known/nodeinfo`);
+  const links = discovery.links ?? [];
+  const link = links[links.length - 1]?.href ?? links[0]?.href;
+  if (!link) throw new Error("No nodeinfo link advertised");
+  return fetchJson(link);
+}

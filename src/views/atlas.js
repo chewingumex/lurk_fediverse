@@ -1,6 +1,7 @@
 import { fetchAllSources } from "../sources/index.js";
 import { renderContentTypeChart, renderSizeDistributionChart } from "../charts.js";
 import { isFavorite, toggleFavorite, onFavoritesChange } from "../favorites.js";
+import { fetchInstanceDetail } from "../instanceDetail.js";
 
 const CONTENT_TYPES = [
   { key: "posts", label: "Posts", statLabel: "Posts instances", colorVar: "--series-1" },
@@ -24,6 +25,8 @@ export function mountAtlas(root) {
       sort: "users-desc",
     },
     visibleCount: PAGE_SIZE,
+    expanded: new Set(),
+    details: new Map(), // domain -> { status: 'loading'|'loaded'|'error', data?, error? }
   };
 
   let resultsContainer = null;
@@ -68,6 +71,55 @@ export function mountAtlas(root) {
     return div.innerHTML;
   }
 
+  function renderDetailPanel(domain) {
+    const entry = state.details.get(domain);
+
+    if (!entry || entry.status === "loading") {
+      return `<div class="card__detail card__detail--loading">Loading instance details…</div>`;
+    }
+    if (entry.status === "error") {
+      return `<div class="card__detail card__detail--error">Couldn't load details: ${escapeHtml(entry.error)}</div>`;
+    }
+
+    const d = entry.data;
+    if (d.unavailable) {
+      return `<div class="card__detail card__detail--empty">No additional details available for this instance.</div>`;
+    }
+
+    const parts = [];
+    if (d.description) parts.push(`<p class="card__detail-desc">${escapeHtml(d.description)}</p>`);
+    if (d.registrationsText) {
+      parts.push(`<div class="card__detail-row"><strong>Registrations</strong> ${escapeHtml(d.registrationsText)}</div>`);
+    }
+    if (d.languages?.length) {
+      parts.push(`<div class="card__detail-row"><strong>Languages</strong> ${d.languages.map(escapeHtml).join(", ")}</div>`);
+    }
+    if (d.contact) parts.push(`<div class="card__detail-row"><strong>Contact</strong> ${escapeHtml(d.contact)}</div>`);
+    if (d.version) parts.push(`<div class="card__detail-row"><strong>Version</strong> ${escapeHtml(d.version)}</div>`);
+
+    const statEntries = Object.entries(d.stats ?? {});
+    if (statEntries.length) {
+      parts.push(
+        `<div class="card__detail-stats">${statEntries
+          .map(([label, value]) => `<span class="card__detail-stat"><strong>${fmt(value)}</strong> ${escapeHtml(label)}</span>`)
+          .join("")}</div>`
+      );
+    }
+
+    if (d.rules?.length) {
+      parts.push(
+        `<div class="card__detail-rules"><strong>Rules</strong><ul>${d.rules
+          .map((r) => `<li>${escapeHtml(r)}</li>`)
+          .join("")}</ul></div>`
+      );
+    }
+
+    if (!parts.length) {
+      return `<div class="card__detail card__detail--empty">No additional details available for this instance.</div>`;
+    }
+    return `<div class="card__detail">${parts.join("")}</div>`;
+  }
+
   function renderResults(container) {
     container.innerHTML = "";
     const filtered = applyFilters(state.instances);
@@ -108,8 +160,34 @@ export function mountAtlas(root) {
         </div>
         <div class="card__users">${fmt(inst.users)} users</div>
         ${inst.description ? `<div class="card__desc">${escapeHtml(inst.description)}</div>` : ""}
-        <a class="card__link" href="${inst.url}" target="_blank" rel="noopener noreferrer">Visit →</a>
+        <div class="card__actions">
+          <button class="card__details-toggle" type="button">${state.expanded.has(inst.domain) ? "Hide details" : "Instance details"}</button>
+          <a class="card__link" href="${inst.url}" target="_blank" rel="noopener noreferrer">Visit →</a>
+        </div>
+        ${state.expanded.has(inst.domain) ? renderDetailPanel(inst.domain) : ""}
       `;
+
+      const detailsBtn = card.querySelector(".card__details-toggle");
+      detailsBtn.addEventListener("click", () => {
+        if (state.expanded.has(inst.domain)) {
+          state.expanded.delete(inst.domain);
+        } else {
+          state.expanded.add(inst.domain);
+          if (!state.details.has(inst.domain)) {
+            state.details.set(inst.domain, { status: "loading" });
+            fetchInstanceDetail(inst.domain, inst.software)
+              .then((data) => {
+                state.details.set(inst.domain, { status: "loaded", data });
+                renderResultsOnly();
+              })
+              .catch((err) => {
+                state.details.set(inst.domain, { status: "error", error: err.message });
+                renderResultsOnly();
+              });
+          }
+        }
+        renderResultsOnly();
+      });
 
       const pinBtn = card.querySelector(".card__pin");
       const syncPin = () => {
